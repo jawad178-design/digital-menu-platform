@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyToken } from '@/lib/auth'
 
 export async function middleware(request: NextRequest) {
   // Protected routes
@@ -15,19 +14,12 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
 
-    const decoded = verifyToken(token)
-    if (!decoded) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
-
-    // Add user info to headers for use in pages
-    const response = NextResponse.next()
-    response.headers.set('x-user-id', decoded.id)
-    response.headers.set('x-user-email', decoded.email)
-    return response
+    // Skip token verification in middleware for edge runtime compatibility
+    // Token verification will be handled in the actual API routes
   }
 
   return NextResponse.next()
+}
 }
 
 export const config = {
