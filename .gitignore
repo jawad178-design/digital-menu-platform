@@ -26,3 +26,17 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 /lib/generated/prisma
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+/prisma/dev.db
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
