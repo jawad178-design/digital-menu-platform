@@ -1,19 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
-    // Test database connection
-    const restaurantCount = await prisma.restaurant.count()
+    // Show environment variables (safely)
+    const databaseUrl = process.env.DATABASE_URL
+    const jwtSecret = process.env.JWT_SECRET
     
-    return NextResponse.json({
+    // Check if they exist and format
+    const response = {
       success: true,
-      message: 'Database connection successful',
-      restaurantCount,
-      hasJwtSecret: !!process.env.JWT_SECRET,
-      hasDatabaseUrl: !!process.env.DATABASE_URL,
-      databaseUrl: process.env.DATABASE_URL?.substring(0, 30) + '...'
-    })
+      message: 'Environment check',
+      hasJwtSecret: !!jwtSecret,
+      hasDatabaseUrl: !!databaseUrl,
+      databaseUrlLength: databaseUrl?.length || 0,
+      databaseUrlPrefix: databaseUrl?.substring(0, 15) || 'none',
+      databaseUrlSuffix: databaseUrl?.substring(databaseUrl.length - 15) || 'none',
+      nodeEnv: process.env.NODE_ENV,
+      vercelEnv: process.env.VERCEL_ENV
+    }
+
+    // Try to import and test Prisma
+    try {
+      const { prisma } = await import('@/lib/prisma')
+      const restaurantCount = await prisma.restaurant.count()
+      
+      return NextResponse.json({
+        ...response,
+        prismaSuccess: true,
+        restaurantCount
+      })
+    } catch (prismaError: any) {
+      return NextResponse.json({
+        ...response,
+        prismaSuccess: false,
+        prismaError: prismaError.message,
+        prismaCode: prismaError.code
+      })
+    }
   } catch (error: any) {
     return NextResponse.json({
       success: false,
